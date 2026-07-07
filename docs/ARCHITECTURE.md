@@ -25,5 +25,100 @@ demo. La migracion recomendada es mover un modulo a la vez desde el MVP hacia
 2. Extraer componentes genericos a `src/shared/ui`.
 3. Migrar `Dashboard` como primer modulo real.
 4. Migrar `Propietarios` e `Inmuebles`, porque son entidades base.
-5. Migrar `Contratos`, `Pagos`, `Mora` y `Liquidaciones` con reglas de dominio.
+5. Migrar `Recaudo Arrendatario`, `Historial de pagos`, `Interes por mora` y `Recaudo propietario` con reglas de dominio.
 6. Agregar API real, autenticacion, roles, auditoria y documentos.
+
+## Correcciones del cliente para el MVP
+
+Estas reglas reemplazan decisiones anteriores del documento inicial.
+
+### Navegacion y lenguaje
+
+- `Contratos` debe mostrarse como `Recaudo Arrendatario`.
+- `Nuevo contrato` debe mostrarse como `Nuevo alquiler`.
+- `Recibos y pagos` debe mostrarse como `Historial de pagos`.
+- `Liquidacion` debe mostrarse como `Recaudo propietario`.
+- `Recargo diario` debe mostrarse como `Interes por mora`.
+
+### Inmuebles
+
+Un inmueble puede estar simultaneamente disponible para alquiler, disponible
+para venta y en reparacion. No debe modelarse con un destino unico excluyente.
+Usar flags o estados independientes:
+
+- `available_for_rent`
+- `available_for_sale`
+- `under_repair`
+- `sold`
+
+El preaviso pertenece al alquiler, no al inmueble. Los tipos de inmueble,
+ubicaciones, bancos, proveedores de servicios, etiquetas de fotos y porcentajes
+de administracion deben ser catalogos administrables, no listas quemadas.
+
+### Venta
+
+La ficha de venta debe usar rango de precios:
+
+- `min_sale_price`
+- `max_sale_price`
+- `suggested_sale_price`
+- `final_sale_price`
+
+La comision esperada se calcula como rango:
+
+- `expected_commission_min = min_sale_price * commission_percentage / 100`
+- `expected_commission_max = max_sale_price * commission_percentage / 100`
+- `final_commission_value = final_sale_price * commission_percentage / 100`
+
+Antes de crear una venta, el inmueble debe existir, tener propietario, estar
+disponible para venta, tener precio minimo y maximo validos, comision y
+responsable. Antes de completar una venta deben existir los documentos
+obligatorios: contrato de mandato, certificado de tradicion, megaobras y
+facturas de servicios publicos al dia.
+
+### Recaudo arrendatario
+
+La mora ahora funciona asi:
+
+- Dia 1 al 5: pago sin interes por mora.
+- Dia 6 al 30: pago con interes por mora.
+- Despues del dia 30: reportado o con afianzadora.
+
+Si un alquiler inicia despues del dia 15, el sistema debe permitir elegir entre
+generar solo recibo por dias o recibo por dias mas mes siguiente. No debe
+generarlo automaticamente sin decision del usuario.
+
+### Recibos e historial de pagos
+
+Un recibo de arrendatario solo se puede generar despues de registrar el pago.
+Debe permitir ajustes multiples con concepto, valor, tipo, nota, soporte y una
+marca para indicar si debe tenerse presente para el propietario. Los cambios
+posteriores del recibo deben guardarse con historial de modificaciones.
+
+### Recaudo propietario
+
+La liquidacion al propietario debe considerar canon pagado, administracion,
+afianzadora, arreglos, descuentos y ajustes marcados para el propietario. Debe
+permitir recibos de caja para propietarios asociados a propietario, inmueble,
+recibo principal o liquidacion.
+
+## Servicios de backend objetivo
+
+La logica critica debe vivir en backend. El frontend solo debe mostrar datos,
+formularios, filtros, estados y PDFs generados.
+
+- `SalesService`
+- `SaleDocumentService`
+- `SaleStatusService`
+- `CommissionService`
+- `RentCollectionService`
+- `PaymentHistoryService`
+- `TenantReceiptService`
+- `OwnerCollectionService`
+- `OwnerCashReceiptService`
+- `SettlementService`
+- `LateInterestService`
+- `PdfService`
+- `AuditService`
+- `CatalogService`
+- `PropertyDocumentService`

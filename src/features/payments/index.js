@@ -1,5 +1,5 @@
 export const paymentsModule = {
   id: 'payments',
-  label: 'Pagos y recibos',
+  label: 'Historial de pagos',
   path: '/pagos',
 };

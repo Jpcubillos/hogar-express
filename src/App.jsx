@@ -110,9 +110,9 @@ function diaDelMes() { return 8; } // simulado para demo: hoy = día 8
 
 function estadoMora() {
   const hoy = diaDelMes();
-  if (hoy <= 5) return { estado: "ok", label: "Sin recargo", color: COLOR.verde, bg: COLOR.verdeClaro };
-  if (hoy <= 10) return { estado: "recargo", label: `Recargo día ${hoy}`, color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro };
-  return { estado: "mora", label: "En afianzadora", color: COLOR.rojo, bg: COLOR.rojoClaro };
+  if (hoy <= 5) return { estado: "ok", label: "Sin interes", color: COLOR.verde, bg: COLOR.verdeClaro };
+  if (hoy <= 30) return { estado: "interes", label: `Interes por mora dia ${hoy}`, color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro };
+  return { estado: "reportado", label: "Reportado / afianzadora", color: COLOR.rojo, bg: COLOR.rojoClaro };
 }
 
 /* ============================================================
@@ -258,7 +258,7 @@ const NAV_ITEMS = [
   { id: "dashboard", label: "Dashboard", icon: Home },
   { id: "propietarios", label: "Propietarios", icon: Users },
   { id: "inmuebles", label: "Inmuebles", icon: Building2 },
-  { id: "alquiler", label: "Alquiler", icon: FileSignature },
+  { id: "alquiler", label: "Recaudo Arrendatario", icon: FileSignature },
   { id: "venta", label: "Venta", icon: Tag },
   { id: "arreglos", label: "Arreglos", icon: Wrench },
   { id: "reportes", label: "Reportes", icon: BarChart3 },
@@ -358,7 +358,7 @@ function Dashboard({ onNavigate }) {
     { label: "Total inmuebles", valor: totalInmuebles, icon: Building2, color: COLOR.azul },
     { label: "Arrendados", valor: arrendados, icon: Check, color: COLOR.verde },
     { label: "En mora / afianzadora", valor: enMora, icon: AlertTriangle, color: COLOR.rojo },
-    { label: "Contratos próx. a vencer", valor: proximosVencer.length, icon: Clock, color: COLOR.mostazaOscuro },
+    { label: "Alquileres prox. a vencer", valor: proximosVencer.length, icon: Clock, color: COLOR.mostazaOscuro },
   ];
 
   return (
@@ -389,7 +389,7 @@ function Dashboard({ onNavigate }) {
             <Badge color={COLOR.rojo} bg={COLOR.rojoClaro}>3 nuevas</Badge>
           </div>
           {[
-            { tipo: "Mora", texto: "Comercializadora El Faro Ltda. — contrato #3, día 8, recargo activo", color: COLOR.mostazaOscuro },
+            { tipo: "Mora", texto: "Comercializadora El Faro Ltda. - alquiler #3, dia 8, interes activo", color: COLOR.mostazaOscuro },
             { tipo: "IPC", texto: "Enero: pendiente actualizar valor de IPC del año en curso", color: COLOR.azul },
             { tipo: "Vencimiento", texto: "Contrato #3 (Local, Av. 6N) vence en 21 días — recordar renovación", color: COLOR.rojo },
           ].map((a, i) => (
@@ -411,7 +411,7 @@ function Dashboard({ onNavigate }) {
           {[
             { label: "Crear propietario", icon: Users, target: "propietarios" },
             { label: "Crear inmueble", icon: Building2, target: "inmuebles" },
-            { label: "Nuevo contrato de alquiler", icon: FileSignature, target: "alquiler" },
+            { label: "Nuevo alquiler", icon: FileSignature, target: "alquiler" },
             { label: "Ver reportes", icon: BarChart3, target: "reportes" },
           ].map((a, i) => (
             <div key={i} onClick={() => onNavigate(a.target)} style={{
@@ -502,7 +502,7 @@ function Propietarios() {
               </div>
             ))}
 
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: "20px 0 12px", color: COLOR.carbon }}>Liquidaciones</h3>
+            <h3 style={{ fontSize: 14, fontWeight: 700, margin: "20px 0 12px", color: COLOR.carbon }}>Recaudo propietario</h3>
             <div style={{ display: "flex", gap: 10 }}>
               <div style={{ flex: 1, background: COLOR.verdeClaro, borderRadius: 8, padding: 12 }}>
                 <div style={{ fontSize: 12, color: COLOR.verde, fontWeight: 600 }}>Liquidadas (mes actual)</div>
@@ -776,18 +776,18 @@ function Alquiler() {
   const [simDia, setSimDia] = useState(8);
 
   const tabs = [
-    { id: "contratos", label: "Contratos" },
-    { id: "recibos", label: "Recibos y pagos" },
+    { id: "contratos", label: "Recaudo Arrendatario" },
+    { id: "recibos", label: "Historial de pagos" },
     { id: "mora", label: "Mora y afianzadora" },
-    { id: "liquidacion", label: "Liquidación" },
+    { id: "liquidacion", label: "Recaudo propietario" },
   ];
 
   return (
     <div>
       <PageHeader
-        title="Alquiler"
-        subtitle="Contratos, recibos, control de mora y liquidación a propietarios"
-        action={tab === "contratos" && <Button icon={Plus} onClick={() => setModalContrato(true)}>Nuevo contrato</Button>}
+        title="Recaudo Arrendatario"
+        subtitle="Alquileres, historial de pagos, interes por mora y recaudo propietario"
+        action={tab === "contratos" && <Button icon={Plus} onClick={() => setModalContrato(true)}>Nuevo alquiler</Button>}
       />
 
       <div style={{ display: "flex", gap: 4, borderBottom: `1px solid ${COLOR.borde}`, marginBottom: 20 }}>
@@ -913,7 +913,7 @@ function NuevoContratoModal({ onClose }) {
   }, [fechaInicio, duracion]);
 
   return (
-    <Modal title="Nuevo contrato de alquiler" onClose={onClose} width={620}>
+    <Modal title="Nuevo alquiler" onClose={onClose} width={620}>
       <Field label="Inmueble disponible">
         <Select>
           {disponibles.length === 0 && <option>No hay inmuebles disponibles</option>}
@@ -976,7 +976,7 @@ function RecibosPanel() {
     <div>
       <Card style={{ marginBottom: 16 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 6px", color: COLOR.carbon }}>Simulador de prorrateo (primer recibo)</h3>
-        <p style={{ fontSize: 12.5, color: COLOR.carbonSuave, margin: "0 0 14px" }}>Regla RN-02 / RN-04: si el contrato inicia después del día 15, se generan dos recibos.</p>
+        <p style={{ fontSize: 12.5, color: COLOR.carbonSuave, margin: "0 0 14px" }}>Si el alquiler inicia despues del dia 15, el usuario debe elegir si genera solo recibo por dias o recibo por dias mas mes siguiente.</p>
         <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
           <div style={{ flex: 1 }}>
             <label style={{ fontSize: 12.5, color: COLOR.carbonSuave, fontWeight: 600 }}>Día de inicio del contrato: {diaInicio}</label>
@@ -1001,7 +1001,7 @@ function RecibosPanel() {
         </div>
         {generaDoble && (
           <div style={{ marginTop: 10, fontSize: 12.5, color: COLOR.mostazaOscuro, display: "flex", alignItems: "center", gap: 6 }}>
-            <AlertTriangle size={14} /> Inicio después del día 15: se generan dos recibos simultáneamente (RN-04).
+            <AlertTriangle size={14} /> Inicio despues del dia 15: se debe elegir el esquema de recibos antes de generar.
           </div>
         )}
       </Card>
@@ -1043,22 +1043,22 @@ function RecibosPanel() {
 
 function MoraPanel({ simDia, setSimDia }) {
   const canonEjemplo = 1200000;
-  const diasRecargo = simDia >= 6 ? Math.min(simDia, 10) - 5 : 0;
-  const recargo = Math.round(canonEjemplo * 0.0176 * diasRecargo);
+  const diasInteres = simDia >= 6 ? Math.min(simDia, 30) - 5 : 0;
+  const interes = Math.round(canonEjemplo * 0.0176 * diasInteres);
 
   const rangos = [
-    { rango: "Días 1–5", label: "Sin recargo", color: COLOR.verde, bg: COLOR.verdeClaro, activo: simDia <= 5 },
-    { rango: "Días 6–10", label: "Recargo 1,76% diario", color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro, activo: simDia > 5 && simDia <= 10 },
-    { rango: "Después del día 10", label: "Bloqueo · pasa a afianzadora", color: COLOR.rojo, bg: COLOR.rojoClaro, activo: simDia > 10 },
+    { rango: "Dias 1-5", label: "Sin interes", color: COLOR.verde, bg: COLOR.verdeClaro, activo: simDia <= 5 },
+    { rango: "Dias 6-30", label: "Interes por mora 1,76% diario", color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro, activo: simDia > 5 && simDia <= 30 },
+    { rango: "Dia 31+", label: "Reportado / afianzadora", color: COLOR.rojo, bg: COLOR.rojoClaro, activo: simDia > 30 },
   ];
 
   return (
     <div>
       <Card style={{ marginBottom: 16 }}>
         <h3 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 6px", color: COLOR.carbon }}>Simulador de mora</h3>
-        <p style={{ fontSize: 12.5, color: COLOR.carbonSuave, margin: "0 0 14px" }}>Ajusta el día del mes para ver cómo cambia el estado del contrato (RN-07 / RN-08 / RN-09).</p>
+        <p style={{ fontSize: 12.5, color: COLOR.carbonSuave, margin: "0 0 14px" }}>Ajusta el dia del mes para ver como cambia el estado del alquiler.</p>
         <label style={{ fontSize: 12.5, color: COLOR.carbonSuave, fontWeight: 600 }}>Día del mes: {simDia}</label>
-        <input type="range" min={1} max={15} value={simDia} onChange={(e) => setSimDia(Number(e.target.value))} style={{ width: "100%", margin: "8px 0 16px" }} />
+        <input type="range" min={1} max={35} value={simDia} onChange={(e) => setSimDia(Number(e.target.value))} style={{ width: "100%", margin: "8px 0 16px" }} />
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
           {rangos.map((r, i) => (
@@ -1072,14 +1072,14 @@ function MoraPanel({ simDia, setSimDia }) {
           ))}
         </div>
 
-        {simDia > 5 && simDia <= 10 && (
+        {simDia > 5 && simDia <= 30 && (
           <div style={{ marginTop: 14, background: COLOR.fondo, borderRadius: 8, padding: 12, fontSize: 13 }}>
-            Recargo sobre canon de {money(canonEjemplo)}: <b>{money(canonEjemplo)} × 1,76% × {diasRecargo} día(s) = {money(recargo)}</b>
+            Interes sobre canon de {money(canonEjemplo)}: <b>{money(canonEjemplo)} x 1,76% x {diasInteres} dia(s) = {money(interes)}</b>
           </div>
         )}
-        {simDia > 10 && (
+        {simDia > 30 && (
           <div style={{ marginTop: 14, background: COLOR.rojoClaro, borderRadius: 8, padding: 12, fontSize: 13, color: COLOR.rojo, display: "flex", alignItems: "center", gap: 8 }}>
-            <AlertTriangle size={15} /> "El plazo de pago venció. Este caso debe tramitarse a través de la afianzadora." — botón de pago deshabilitado.
+            <AlertTriangle size={15} /> El caso queda reportado o con afianzadora. Debe registrarse si ya se soluciono.
           </div>
         )}
       </Card>
@@ -1089,7 +1089,7 @@ function MoraPanel({ simDia, setSimDia }) {
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13.5 }}>
           <thead>
             <tr style={{ background: COLOR.fondo }}>
-              {["Arrendatario", "Inmueble", "Días de atraso", "Valor recargo", "Afianzadora", "Estado"].map((h, i) => (
+              {["Arrendatario", "Inmueble", "Dias de atraso", "Interes por mora", "Afianzadora", "Estado"].map((h, i) => (
                 <th key={i} style={{ textAlign: "left", padding: "10px 16px", fontSize: 12, color: COLOR.carbonSuave, fontWeight: 700, textTransform: "uppercase" }}>{h}</th>
               ))}
             </tr>
@@ -1101,7 +1101,7 @@ function MoraPanel({ simDia, setSimDia }) {
               <td style={{ padding: "12px 16px" }}>3 días</td>
               <td style={{ padding: "12px 16px", fontWeight: 600 }}>{money(1850000 * 0.0176 * 3)}</td>
               <td style={{ padding: "12px 16px", color: COLOR.carbonSuave }}>AFFI</td>
-              <td style={{ padding: "12px 16px" }}><Badge color={COLOR.mostazaOscuro} bg={COLOR.mostazaClaro}>Con recargo</Badge></td>
+              <td style={{ padding: "12px 16px" }}><Badge color={COLOR.mostazaOscuro} bg={COLOR.mostazaClaro}>Con interes</Badge></td>
             </tr>
           </tbody>
         </table>
@@ -1135,7 +1135,7 @@ function LiquidacionPanel() {
               {PROPIETARIOS.map(p => <option key={p.id} value={p.id}>{p.nombre}</option>)}
             </Select>
             <Badge color={esConsolidada ? COLOR.mostazaOscuro : COLOR.azul} bg={esConsolidada ? COLOR.mostazaClaro : COLOR.azulClaro}>
-              {esConsolidada ? "Liquidación consolidada (4+ inmuebles)" : "Liquidación individual"}
+              {esConsolidada ? "Recaudo propietario consolidado (4+ inmuebles)" : "Recaudo propietario individual"}
             </Badge>
           </div>
           <Button icon={Download} variant="secondary">Exportar PDF</Button>
@@ -1338,7 +1338,7 @@ function Arreglos() {
           </Field>
           <Field label="¿El costo se descuenta de...?">
             <div style={{ display: "flex", gap: 10 }}>
-              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}><input type="radio" name="cargo" defaultChecked /> Propietario (liquidación)</label>
+              <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}><input type="radio" name="cargo" defaultChecked /> Propietario (recaudo propietario)</label>
               <label style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13 }}><input type="radio" name="cargo" /> Arrendatario (recibo)</label>
             </div>
           </Field>
@@ -1418,7 +1418,7 @@ function Configuracion() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
         <Card>
           <h3 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 14px" }}>Parámetros financieros</h3>
-          <Field label="% Recargo diario por mora"><Input defaultValue="1.76" /></Field>
+          <Field label="% Interes por mora diario"><Input defaultValue="1.76" /></Field>
           <Field label="% Administración por defecto"><Input defaultValue="10" /></Field>
           <Field label="Valor de IPC vigente (%)"><Input defaultValue="6.5" /></Field>
           <Button>Guardar parámetros</Button>

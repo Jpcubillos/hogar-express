@@ -1,5 +1,5 @@
 export const leasingModule = {
   id: 'leasing',
-  label: 'Alquiler',
+  label: 'Recaudo Arrendatario',
   path: '/alquiler',
 };

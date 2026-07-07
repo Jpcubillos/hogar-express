@@ -1,5 +1,5 @@
 export const settlementsModule = {
   id: 'settlements',
-  label: 'Liquidaciones',
+  label: 'Recaudo propietario',
   path: '/liquidaciones',
 };
