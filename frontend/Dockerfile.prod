@@ -1,0 +1,15 @@
+FROM node:24-alpine AS builder
+
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+COPY . .
+RUN npm run build
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+# Keep container alive so volume mount is maintained in Compose
+CMD ["tail", "-f", "/dev/null"]

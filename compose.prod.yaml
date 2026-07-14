@@ -1,0 +1,42 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: prod
+    command: gunicorn --bind 0.0.0.0:8000 --workers 3 config.wsgi:application
+    environment:
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DJANGO_DEBUG=false
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+    # The frontend container compiles the code and places it in a volume that Nginx serves.
+    # Therefore, it finishes execution or we can use Nginx as the primary server.
+    # Here, we will make Nginx serve the static files built by the frontend container.
+    volumes:
+      - frontend_dist:/app/dist
+
+  nginx:
+    image: nginx:alpine
+    container_name: hogar_express_nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./infrastructure/nginx:/etc/nginx/conf.d:ro
+      - frontend_dist:/usr/share/nginx/html:ro
+      - static_data:/usr/share/nginx/static:ro
+      - media_data:/usr/share/nginx/media:ro
+    depends_on:
+      - backend
+      - frontend
+
+volumes:
+  frontend_dist:

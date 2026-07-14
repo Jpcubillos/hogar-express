@@ -1,29 +1,27 @@
-# Arquitectura Base
+# Arquitectura Técnica: Hogar Express
 
-El MVP visual existente se mantiene activo mientras se migra por partes hacia
-una estructura modular. La regla principal es no mezclar UI, reglas de negocio
-y persistencia en el mismo archivo.
+## Componentes del Sistema
 
-## Capas
+El sistema se compone de los siguientes contenedores aislados:
 
-- `src/app`: composicion de la aplicacion, providers y registro de modulos.
-- `src/features`: pantallas y flujos por modulo funcional.
-- `src/domain`: conceptos del negocio, estados, invariantes y reglas puras.
-- `src/infrastructure`: adaptadores para API, storage, documentos y mocks.
-- `src/shared`: componentes, utilidades y configuracion reutilizable.
+1. **db**: Base de datos relacional PostgreSQL 17.
+2. **backend**: Capa transaccional Django 5.2.16 + Django REST Framework 3.17.1.
+3. **frontend**: SPA React 19 + Vite 8.1.0 servido localmente con HMR en desarrollo.
+4. **nginx**: Proxy inverso en producción que sirve estáticos y redirige `/api/` y `/admin/`.
 
-## Estado actual
+```
+[Cliente (Navegador)] ──(Puerto 80)──> [ Nginx (Prod) ]
+                                            │
+               ┌────────────────────────────┴──────────────────────────┐
+               ▼                                                       ▼
+      [ Frontend Dist ]                                        [ Backend (WSGI) ]
+                                                                       │
+                                                                       ▼
+                                                              [ PostgreSQL (db) ]
+```
 
-`src/App.jsx` conserva el MVP entregado por el companero. `src/app/App.jsx`
-lo envuelve para que la nueva entrada de la aplicacion ya exista sin romper la
-demo. La migracion recomendada es mover un modulo a la vez desde el MVP hacia
-`src/features`.
+## Seguridad de Solicitudes
 
-## Orden recomendado de migracion
-
-1. Extraer datos mock a repositorios de `src/infrastructure`.
-2. Extraer componentes genericos a `src/shared/ui`.
-3. Migrar `Dashboard` como primer modulo real.
-4. Migrar `Propietarios` e `Inmuebles`, porque son entidades base.
-5. Migrar `Contratos`, `Pagos`, `Mora` y `Liquidaciones` con reglas de dominio.
-6. Agregar API real, autenticacion, roles, auditoria y documentos.
+- Autenticación mediante sesiones seguras con cookies HTTPOnly (`SameSite=Lax`).
+- Protección CSRF activa mediante cabecera `X-CSRFToken` e interceptores de Axios.
+- Almacenamiento de archivos binarios fuera de la base de datos con URLs cifradas por UUID y descarga protegida con autenticación.

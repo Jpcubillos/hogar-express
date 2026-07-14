@@ -1,0 +1,16 @@
+export const COLOR = {
+  mostaza: "#E0A52C",
+  mostazaOscuro: "#B8821E",
+  mostazaClaro: "#FBF1DD",
+  azul: "#2C5F8A",
+  azulOscuro: "#1F4565",
+  azulClaro: "#E8F0F7",
+  carbon: "#363432",
+  carbonSuave: "#6B6764",
+  verde: "#5B7F3C",
+  verdeClaro: "#EBF1E3",
+  rojo: "#B6422E",
+  rojoClaro: "#F8E8E4",
+  fondo: "#FBF9F5",
+  borde: "#E5E0D6",
+};

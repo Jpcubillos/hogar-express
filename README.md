@@ -1,16 +1,88 @@
-# React + Vite
+# Hogar Express
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Hogar Express es una plataforma web interna para la gestión inmobiliaria en Colombia. Este repositorio contiene la base técnica profesional, modular y contenerizada del sistema, migrada desde el prototipo MVP original.
 
-Currently, two official plugins are available:
+## Stack Tecnológico
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Backend:** Python 3.13 + Django 5.2.16 LTS + Django REST Framework 3.17.1.
+- **Frontend:** React 19 + TypeScript + Vite 8.1.0 + React Router v7.
+- **Base de Datos:** PostgreSQL 17.
+- **Contenedores:** Docker & Docker Compose.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Requisitos Previos
 
-## Expanding the ESLint configuration
+- Docker (v20.10+)
+- Docker Compose (v2.0+)
+- Git
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## Inicio Rápido (Bootstrap)
+
+El sistema se puede levantar completamente desde cero con un solo comando gracias a los scripts de automatización:
+
+### En Windows (PowerShell):
+```powershell
+./scripts/bootstrap.ps1
+```
+
+### En Linux / macOS:
+```bash
+chmod +x scripts/*.sh
+./scripts/bootstrap.sh
+```
+
+Este script:
+1. Creará tu archivo `.env` local a partir de `.env.example`.
+2. Descargará las imágenes oficiales e iniciará los contenedores.
+3. Esperará a que PostgreSQL esté saludable.
+4. Aplicará las migraciones de Django.
+5. Cargará los roles y permisos (`seed_roles`).
+6. Creará el superusuario administrador por defecto.
+
+---
+
+## URLs de Acceso Local
+
+- **Frontend:** [http://localhost:5173](http://localhost:5173)
+- **Backend API:** [http://localhost:8000/api/v1/](http://localhost:8000/api/v1/)
+- **Django Admin:** [http://localhost:8000/admin/](http://localhost:8000/admin/)
+- **API Docs (OpenAPI):** [http://localhost:8000/api/docs/](http://localhost:8000/api/docs/)
+
+---
+
+## Credenciales de Demostración
+
+Si se habilita la semilla demo (`python manage.py seed_demo`), puedes usar:
+
+| Rol | Usuario | Contraseña |
+|---|---|---|
+| **Administrador** | `admin` | `change_me` |
+| **Asesor Interno** | `intern` | `change_me` |
+| **Asesor Externo** | `extern` | `change_me` |
+| **Consulta / Lectura** | `visitor` | `change_me` |
+
+*Advertencia: Cambiar estas contraseñas por defecto antes de desplegar a producción.*
+
+---
+
+## Comandos Útiles
+
+### Levantar en Desarrollo
+```bash
+./scripts/dev.ps1   # Windows
+./scripts/dev.sh    # Linux/macOS
+```
+
+### Ejecutar Pruebas y Linting
+```bash
+./scripts/test.ps1  # Windows
+./scripts/test.sh   # Linux/macOS
+```
+
+### Realizar Copias de Seguridad (Backup)
+```bash
+./scripts/backup.sh
+```
