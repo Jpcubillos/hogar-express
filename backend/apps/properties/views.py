@@ -1,15 +1,8 @@
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from apps.properties.models import Property
-from rest_framework.serializers import ModelSerializer
+from apps.core.api import domain_viewset_for
+from apps.properties.models import Property, PropertyInventory, RentalListing
 
-class PropertySerializer(ModelSerializer):
-    class Meta:
-        model = Property
-        fields = '__all__'
-
-class PropertiesViewSet(viewsets.ModelViewSet):
-    queryset = Property.objects.filter(is_active=True)
-    serializer_class = PropertySerializer
-    permission_classes = [permissions.IsAuthenticated]
+PropertiesViewSet = domain_viewset_for(
+    Property, ("property_type", "city", "neighborhood", "operational_status", "is_active")
+)
+RentalListingViewSet = domain_viewset_for(RentalListing, ("property", "status", "is_active"))
+PropertyInventoryViewSet = domain_viewset_for(PropertyInventory, ("property", "rental", "status"))

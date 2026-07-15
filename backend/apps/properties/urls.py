@@ -1,10 +1,10 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from apps.properties.views import PropertiesViewSet
+
+from .views import PropertiesViewSet, PropertyInventoryViewSet, RentalListingViewSet
 
 router = DefaultRouter()
-router.register(r'', PropertiesViewSet)
-
-urlpatterns = [
-    path('', include(router.urls)),
-]
+router.register("rental-listings", RentalListingViewSet, basename="rental-listing")
+router.register("inventories", PropertyInventoryViewSet, basename="property-inventory")
+router.register("", PropertiesViewSet, basename="property")
+urlpatterns = [path("", include(router.urls))]

@@ -1,5 +1,5 @@
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from apps.core.api import domain_viewset_for
+from apps.guarantors.models import GuaranteeCase, RentalGuarantee
 
-# Placeholder views for guarantors
+RentalGuaranteeViewSet = domain_viewset_for(RentalGuarantee, ("rental", "guarantor_company", "status", "is_active"))
+GuaranteeCaseViewSet = domain_viewset_for(GuaranteeCase, ("rental_guarantee", "status", "is_active"))

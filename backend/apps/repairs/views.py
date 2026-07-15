@@ -1,17 +1,7 @@
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from apps.core.api import domain_viewset_for
+from apps.repairs.models import PropertyIssue, RepairCost, RepairOrder, RepairQuote
 
-# Placeholder views for repairs
-from apps.repairs.models import Repair
-from rest_framework.serializers import ModelSerializer
-
-class RepairSerializer(ModelSerializer):
-    class Meta:
-        model = Repair
-        fields = '__all__'
-
-class RepairsViewSet(viewsets.ModelViewSet):
-    queryset = Repair.objects.filter(is_active=True)
-    serializer_class = RepairSerializer
-    permission_classes = [permissions.IsAuthenticated]
+PropertyIssueViewSet = domain_viewset_for(PropertyIssue, ("property", "rental", "status", "priority", "is_active"))
+RepairsViewSet = domain_viewset_for(RepairOrder, ("property", "rental", "status", "priority", "is_active"))
+RepairQuoteViewSet = domain_viewset_for(RepairQuote, ("repair", "provider", "status", "is_active"))
+RepairCostViewSet = domain_viewset_for(RepairCost, ("repair", "provider", "cost_type", "is_active"))

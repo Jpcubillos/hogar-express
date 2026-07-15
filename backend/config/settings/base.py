@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.accounts',
     'apps.audit',
+    'apps.configuration',
     'apps.catalogs',
     'apps.documents',
     'apps.owners',
@@ -126,6 +127,9 @@ SPECTACULAR_SETTINGS = {
     'DESCRIPTION': 'Internal Software API for Hogar Express Inmobiliaria',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'ConfigurationPolicyStatusEnum': 'apps.configuration.models.EffectivePolicy.PolicyStatus',
+    },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

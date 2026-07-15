@@ -16,6 +16,7 @@ urlpatterns = [
     path('api/v1/ready/', ready_check, name='ready_check'),
     
     path('api/v1/auth/', include('apps.accounts.urls')),
+    path('api/v1/configuration/', include('apps.configuration.urls')),
     path('api/v1/audit/', include('apps.audit.urls')),
     path('api/v1/catalogs/', include('apps.catalogs.urls')),
     path('api/v1/documents/', include('apps.documents.urls')),

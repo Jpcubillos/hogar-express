@@ -1,111 +1,108 @@
-from django.core.management.base import BaseCommand
 from django.contrib.auth.models import Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from apps.accounts.models import User
+from django.core.management.base import BaseCommand
+
+
+PERMISSIONS = [
+    ("accounts", "user", "manage_users", "Puede administrar usuarios"),
+    ("accounts", "user", "manage_roles", "Puede administrar roles y permisos"),
+    ("configuration", "organization", "manage_configuration", "Puede administrar configuración"),
+    ("catalogs", "country", "manage_catalogs", "Puede administrar catálogos"),
+    ("owners", "owner", "view_owner_business", "Puede consultar propietarios"),
+    ("owners", "owner", "manage_owner", "Puede administrar propietarios"),
+    ("properties", "property", "view_property_business", "Puede consultar inmuebles"),
+    ("properties", "property", "manage_property", "Puede administrar inmuebles"),
+    ("people", "party", "view_people", "Puede consultar personas"),
+    ("people", "party", "manage_people", "Puede administrar personas"),
+    ("rentals", "rental", "view_rental_business", "Puede consultar alquileres"),
+    ("rentals", "rental", "manage_rental", "Puede administrar alquileres"),
+    ("payments", "payment", "view_payment_business", "Puede consultar pagos"),
+    ("payments", "payment", "manage_payment", "Puede registrar y administrar pagos"),
+    ("payments", "receipt", "generate_receipt", "Puede generar recibos"),
+    ("payments", "receipt", "void_receipt", "Puede anular recibos"),
+    ("payments", "ownersettlement", "manage_owner_settlement", "Puede gestionar recaudo propietario"),
+    ("documents", "document", "view_private_document", "Puede ver documentos privados"),
+    ("documents", "document", "upload_document", "Puede cargar documentos"),
+    ("documents", "document", "change_document_metadata", "Puede editar metadatos"),
+    ("documents", "document", "archive_document", "Puede archivar documentos"),
+    ("repairs", "repairorder", "view_repair_business", "Puede consultar reparaciones"),
+    ("repairs", "repairorder", "manage_repair", "Puede administrar reparaciones"),
+    ("repairs", "repairorder", "approve_repair", "Puede aprobar reparaciones"),
+    ("repairs", "repairorder", "close_repair", "Puede cerrar reparaciones"),
+    ("repairs", "repairorder", "apply_financial_charge", "Puede aplicar costos de reparación"),
+    ("sales", "salelisting", "view_sales", "Puede consultar ventas"),
+    ("sales", "salelisting", "manage_sales", "Puede administrar ventas"),
+    ("reports", "reportdefinition", "view_operational_reports", "Puede consultar reportes operativos"),
+    ("reports", "reportdefinition", "view_financial_reports", "Puede consultar reportes financieros"),
+    ("reports", "reportdefinition", "export_reports", "Puede exportar reportes"),
+    ("audit", "auditevent", "view_audit", "Puede consultar auditoría"),
+]
+
+DEFAULT_ACCESS = {
+    "Asesor Interno": {
+        "owners": {"view", "add", "change"},
+        "properties": {"view", "add", "change"},
+        "people": {"view", "add", "change"},
+        "rentals": {"view", "add", "change"},
+        "payments": {"view", "add", "change"},
+        "documents": {"view", "add", "change"},
+        "repairs": {"view", "add", "change"},
+        "reports": {"view", "add"},
+        "guarantors": {"view", "add", "change"},
+    },
+    "Asesor Externo": {
+        "properties": {"view"},
+        "sales": {"view", "add", "change"},
+        "documents": {"view", "add"},
+        "reports": {"view"},
+    },
+    "Consulta": {
+        "owners": {"view"},
+        "properties": {"view"},
+        "people": {"view"},
+        "rentals": {"view"},
+        "payments": {"view"},
+        "documents": {"view"},
+        "repairs": {"view"},
+        "reports": {"view"},
+        "guarantors": {"view"},
+    },
+}
+
 
 class Command(BaseCommand):
-    help = 'Idempotently seeds groups/roles and permissions for Hogar Express'
+    help = "Crea o actualiza roles y permisos del sistema"
 
     def handle(self, *args, **options):
-        # We need a ContentType to bind custom permissions to.
-        # We'll use the accounts.User ContentType or core ContentType.
-        user_ct = ContentType.objects.get_for_model(User)
-        
-        # 1. Define custom permissions
-        custom_permissions = [
-            # Repairs
-            ('view_repair', 'Can view repairs', user_ct),
-            ('add_repair', 'Can add repairs', user_ct),
-            ('change_repair', 'Can change repairs', user_ct),
-            ('approve_repair', 'Can approve repairs', user_ct),
-            ('close_repair', 'Can close repairs', user_ct),
-            ('apply_financial_charge', 'Can apply financial charge for repairs', user_ct),
-            # Reports
-            ('view_operational_reports', 'Can view operational reports', user_ct),
-            ('view_financial_reports', 'Can view financial reports', user_ct),
-            ('export_reports', 'Can export reports', user_ct),
-            # Documents
-            ('view_private_document', 'Can view private documents', user_ct),
-            ('upload_document', 'Can upload documents', user_ct),
-            ('change_document', 'Can edit documents metadata', user_ct),
-            ('archive_document', 'Can archive documents', user_ct),
-            # Accounts
-            ('manage_users', 'Can manage users', user_ct),
-            ('manage_roles', 'Can manage roles and permissions', user_ct),
-            # Sales
-            ('view_sales', 'Can view sales modules', user_ct),
-            ('manage_sales', 'Can manage sales transactions', user_ct),
-            # Owners
-            ('view_owner', 'Can view owners', user_ct),
-            ('manage_owner', 'Can manage owners', user_ct),
-            # Properties
-            ('view_property', 'Can view properties', user_ct),
-            ('manage_property', 'Can manage properties', user_ct),
-            # People (Arrendatarios, Codeudores, Apoderados)
-            ('view_people', 'Can view related people', user_ct),
-            ('manage_people', 'Can manage related people', user_ct),
-            # Rentals & Contratos
-            ('view_rental', 'Can view rentals and contracts', user_ct),
-            ('manage_rental', 'Can manage rentals and contracts', user_ct),
-            # Payments
-            ('view_payment', 'Can view payments', user_ct),
-            ('manage_payment', 'Can manage payments', user_ct),
-        ]
-
-        # Idempotently create permissions
-        permissions_dict = {}
-        for codename, name, ct in custom_permissions:
-            perm, created = Permission.objects.get_or_create(
-                codename=codename,
-                content_type=ct,
-                defaults={'name': name}
+        permission_map = {}
+        for app_label, model, codename, name in PERMISSIONS:
+            content_type = ContentType.objects.get(app_label=app_label, model=model)
+            permission, _ = Permission.objects.update_or_create(
+                content_type=content_type, codename=codename, defaults={"name": name}
             )
-            permissions_dict[codename] = perm
-            if created:
-                self.stdout.write(self.style.SUCCESS(f"Created permission: {codename}"))
+            permission_map[codename] = permission
 
-        # 2. Define Groups and their specific permissions
-        groups_config = {
-            'Administrador': {
-                'permissions': list(permissions_dict.keys()), # Full access
+        groups = {
+            "Asesor Interno": {
+                "view_owner_business", "manage_owner", "view_property_business", "manage_property",
+                "view_people", "manage_people", "view_rental_business", "manage_rental",
+                "view_payment_business", "manage_payment", "generate_receipt", "manage_owner_settlement",
+                "view_private_document", "upload_document", "change_document_metadata", "archive_document",
+                "view_repair_business", "manage_repair", "view_operational_reports", "export_reports",
             },
-            'Asesor Interno': {
-                'permissions': [
-                    'view_owner', 'manage_owner',
-                    'view_property', 'manage_property',
-                    'view_people', 'manage_people',
-                    'view_rental', 'manage_rental',
-                    'view_payment', 'manage_payment',
-                    'view_repair', 'add_repair', 'change_repair',
-                    'view_private_document', 'upload_document', 'change_document', 'archive_document',
-                    'view_operational_reports', 'export_reports'
-                ]
-            },
-            'Asesor Externo': {
-                'permissions': [
-                    'view_property',  # Can query available properties for sale
-                    'view_sales', 'manage_sales',  # Limited to sales
-                    'view_operational_reports'
-                ]
-            },
-            'Consulta': {
-                'permissions': [
-                    'view_owner', 'view_property', 'view_people', 'view_rental',
-                    'view_payment', 'view_repair', 'view_private_document',
-                    'view_operational_reports'
-                ]
-            }
+            "Asesor Externo": {"view_property_business", "view_sales", "manage_sales", "view_operational_reports"},
+            "Consulta": {"view_owner_business", "view_property_business", "view_people", "view_rental_business",
+                         "view_payment_business", "view_repair_business", "view_operational_reports"},
         }
-
-        # Idempotently create groups and assign permissions
-        for group_name, config in groups_config.items():
-            group, created = Group.objects.get_or_create(name=group_name)
-            if created:
-                self.stdout.write(self.style.SUCCESS(f"Created group: {group_name}"))
-            
-            # Get permissions for this group
-            perms_to_set = [permissions_dict[codename] for codename in config['permissions'] if codename in permissions_dict]
-            group.permissions.set(perms_to_set)
-            self.stdout.write(self.style.SUCCESS(f"Updated permissions for group: {group_name}"))
-
-        self.stdout.write(self.style.SUCCESS("Roles and permissions seeding completed successfully!"))
+        administrator, _ = Group.objects.get_or_create(name="Administrador")
+        administrator.permissions.set(Permission.objects.all())
+        for group_name, codenames in groups.items():
+            group, _ = Group.objects.get_or_create(name=group_name)
+            granted = {permission_map[codename] for codename in codenames}
+            for app_label, actions in DEFAULT_ACCESS[group_name].items():
+                for permission in Permission.objects.filter(content_type__app_label=app_label):
+                    action = permission.codename.split("_", 1)[0]
+                    if action in actions:
+                        granted.add(permission)
+            group.permissions.set(granted)
+        self.stdout.write(self.style.SUCCESS("Roles y permisos actualizados."))

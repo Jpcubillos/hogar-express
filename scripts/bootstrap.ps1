@@ -74,11 +74,15 @@ if (-not $dbHealthy) {
 Write-Host "Ejecutando migraciones de base de datos..." -ForegroundColor Gray
 docker compose exec backend python manage.py migrate
 
-# 7. Seed Roles
+# 7. Seed Catalogs
+Write-Host "Cargando catálogos y configuración inicial..." -ForegroundColor Gray
+docker compose exec backend python manage.py seed_catalogs
+
+# 8. Seed Roles
 Write-Host "Cargando roles y permisos en la base de datos..." -ForegroundColor Gray
 docker compose exec backend python manage.py seed_roles
 
-# 8. Create Superuser (Idempotent try)
+# 9. Create Superuser (Idempotent try)
 Write-Host "Creando superusuario de administración..." -ForegroundColor Gray
 docker compose exec backend python manage.py createsuperuser --noinput 2>$null
 if ($LASTEXITCODE -eq 0) {

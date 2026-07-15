@@ -1,5 +1,5 @@
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
+from apps.core.api import domain_viewset_for
+from apps.people.models import Party, ProviderProfile
 
-# Placeholder views for people
+PartyViewSet = domain_viewset_for(Party, ("party_type", "identification_type", "is_active"))
+ProviderViewSet = domain_viewset_for(ProviderProfile, ("provider_kind", "is_active"))

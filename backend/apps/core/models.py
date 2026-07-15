@@ -1,37 +1,81 @@
-from django.db import models
+"""Shared persistence primitives for every Hogar Express domain model."""
+
+import uuid
+
 from django.conf import settings
-
-class TimeStampedModel(models.Model):
-    """
-    An abstract base class model that provides self-updating
-    ``created_at`` and ``updated_at`` fields.
-    """
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="Fecha de actualización")
-
-    class Meta:
-        abstract = True
+from django.db import models
 
 
-class UserStampedModel(models.Model):
-    """
-    An abstract base class model that tracks user creation/modification.
-    """
+class DomainModel(models.Model):
+    """UUID, audit stamps, optimistic version and legacy migration metadata."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="%(class)s_created",
-        verbose_name="Creado por"
+        related_name="%(app_label)s_%(class)s_created",
     )
     updated_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="%(class)s_updated",
-        verbose_name="Actualizado por"
+        related_name="%(app_label)s_%(class)s_updated",
+    )
+    version = models.PositiveIntegerField(default=1)
+    legacy_id = models.CharField(max_length=100, null=True, blank=True, db_index=True)
+    legacy_source = models.CharField(max_length=100, null=True, blank=True)
+
+    class Meta:
+        abstract = True
+
+
+class ArchivableModel(DomainModel):
+    """Business records are archived instead of physically deleted."""
+
+    is_active = models.BooleanField(default=True, db_index=True)
+    archived_at = models.DateTimeField(null=True, blank=True)
+    archived_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(app_label)s_%(class)s_archived",
+    )
+    archive_reason = models.TextField(blank=True)
+
+    class Meta:
+        abstract = True
+
+
+# Backwards-compatible abstract mixins retained for code written against the
+# foundation commit. New models should use DomainModel/ArchivableModel.
+class TimeStampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
+class UserStampedModel(models.Model):
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(app_label)s_%(class)s_legacy_created",
+    )
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="%(app_label)s_%(class)s_legacy_updated",
     )
 
     class Meta:
@@ -39,18 +83,14 @@ class UserStampedModel(models.Model):
 
 
 class SoftDeleteModel(models.Model):
-    """
-    An abstract base class model that provides archiving capabilities.
-    """
-    is_active = models.BooleanField(default=True, verbose_name="Activo")
-    archived_at = models.DateTimeField(null=True, blank=True, verbose_name="Fecha de archivado")
+    is_active = models.BooleanField(default=True)
+    archived_at = models.DateTimeField(null=True, blank=True)
     archived_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name="%(class)s_archived",
-        verbose_name="Archivado por"
+        related_name="%(app_label)s_%(class)s_legacy_archived",
     )
 
     class Meta:
@@ -58,11 +98,8 @@ class SoftDeleteModel(models.Model):
 
 
 class LegacyMigratableModel(models.Model):
-    """
-    An abstract base class model for legacy entities migrated from MS Access.
-    """
-    legacy_id = models.CharField(max_length=100, null=True, blank=True, verbose_name="ID Legado (Access)")
-    legacy_source = models.CharField(max_length=100, null=True, blank=True, verbose_name="Origen Legado")
+    legacy_id = models.CharField(max_length=100, null=True, blank=True)
+    legacy_source = models.CharField(max_length=100, null=True, blank=True)
 
     class Meta:
         abstract = True

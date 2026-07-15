@@ -1,102 +1,52 @@
-from rest_framework import viewsets, permissions, serializers
-from apps.catalogs.models import Bank, City, Neighborhood, PropertyType, DocumentType, PhotoTag, RepairCategory, PaymentMethod, GuarantorCompany, GuarantyType
+from rest_framework import permissions, serializers, viewsets
 
-# Base Serializer
-class CatalogBaseSerializer(serializers.ModelSerializer):
+from apps.catalogs import models
+
+
+class CatalogSerializer(serializers.ModelSerializer):
     class Meta:
-        fields = ['id', 'code', 'name', 'description', 'order', 'is_active']
+        fields = "__all__"
 
 
-# Specific Serializers
-class BankSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = Bank
-
-class CitySerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = City
-        fields = CatalogBaseSerializer.Meta.fields + ['department', 'country']
-
-class NeighborhoodSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = Neighborhood
-        fields = CatalogBaseSerializer.Meta.fields + ['city']
-
-class PropertyTypeSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = PropertyType
-
-class DocumentTypeSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = DocumentType
-
-class PhotoTagSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = PhotoTag
-
-class RepairCategorySerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = RepairCategory
-
-class PaymentMethodSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = PaymentMethod
-
-class GuarantorCompanySerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = GuarantorCompany
-
-class GuarantyTypeSerializer(CatalogBaseSerializer):
-    class Meta(CatalogBaseSerializer.Meta):
-        model = GuarantyType
+def serializer_for(model):
+    return type(f"{model.__name__}Serializer", (CatalogSerializer,), {"Meta": type("Meta", (), {"model": model, "fields": "__all__"})})
 
 
-# ViewSets (Read-only by default for standard users, writeable by admin)
-class CatalogBaseViewSet(viewsets.ModelViewSet):
+class CatalogViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+        if self.action in {"create", "update", "partial_update", "destroy"}:
             return [permissions.IsAdminUser()]
         return super().get_permissions()
 
-class BankViewSet(CatalogBaseViewSet):
-    queryset = Bank.objects.filter(is_active=True)
-    serializer_class = BankSerializer
 
-class CityViewSet(CatalogBaseViewSet):
-    queryset = City.objects.filter(is_active=True)
-    serializer_class = CitySerializer
+def viewset_for(model, filterset_fields=()):
+    attrs = {
+        "queryset": model.objects.filter(is_active=True),
+        "serializer_class": serializer_for(model),
+        "filterset_fields": filterset_fields,
+    }
+    return type(f"{model.__name__}ViewSet", (CatalogViewSet,), attrs)
 
-class NeighborhoodViewSet(CatalogBaseViewSet):
-    queryset = Neighborhood.objects.filter(is_active=True)
-    serializer_class = NeighborhoodSerializer
-    filterset_fields = ['city']
 
-class PropertyTypeViewSet(CatalogBaseViewSet):
-    queryset = PropertyType.objects.filter(is_active=True)
-    serializer_class = PropertyTypeSerializer
-
-class DocumentTypeViewSet(CatalogBaseViewSet):
-    queryset = DocumentType.objects.filter(is_active=True)
-    serializer_class = DocumentTypeSerializer
-
-class PhotoTagViewSet(CatalogBaseViewSet):
-    queryset = PhotoTag.objects.filter(is_active=True)
-    serializer_class = PhotoTagSerializer
-
-class RepairCategoryViewSet(CatalogBaseViewSet):
-    queryset = RepairCategory.objects.filter(is_active=True)
-    serializer_class = RepairCategorySerializer
-
-class PaymentMethodViewSet(CatalogBaseViewSet):
-    queryset = PaymentMethod.objects.filter(is_active=True)
-    serializer_class = PaymentMethodSerializer
-
-class GuarantorCompanyViewSet(CatalogBaseViewSet):
-    queryset = GuarantorCompany.objects.filter(is_active=True)
-    serializer_class = GuarantorCompanySerializer
-
-class GuarantyTypeViewSet(CatalogBaseViewSet):
-    queryset = GuarantyType.objects.filter(is_active=True)
-    serializer_class = GuarantyTypeSerializer
+CountryViewSet = viewset_for(models.Country)
+DepartmentViewSet = viewset_for(models.Department, ("country",))
+CityViewSet = viewset_for(models.City, ("department",))
+NeighborhoodViewSet = viewset_for(models.Neighborhood, ("city",))
+BankViewSet = viewset_for(models.Bank)
+IdentificationTypeViewSet = viewset_for(models.IdentificationType)
+PropertyTypeViewSet = viewset_for(models.PropertyType)
+DocumentTypeViewSet = viewset_for(models.DocumentType)
+PhotoTagViewSet = viewset_for(models.PhotoTag)
+InventoryCategoryViewSet = viewset_for(models.InventoryCategory)
+InventoryConceptViewSet = viewset_for(models.InventoryConcept, ("category",))
+MeasureUnitViewSet = viewset_for(models.MeasureUnit)
+RepairCategoryViewSet = viewset_for(models.RepairCategory)
+ProviderSpecialtyViewSet = viewset_for(models.ProviderSpecialty)
+PaymentMethodViewSet = viewset_for(models.PaymentMethod)
+FinancialConceptViewSet = viewset_for(models.FinancialConcept, ("kind",))
+GuarantorCompanyViewSet = viewset_for(models.GuarantorCompany)
+GuarantyTypeViewSet = viewset_for(models.GuaranteeType)
+UtilityTypeViewSet = viewset_for(models.UtilityType)
+UtilityProviderViewSet = viewset_for(models.UtilityProvider)
