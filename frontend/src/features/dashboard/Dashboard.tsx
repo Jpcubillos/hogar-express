@@ -1,116 +1,123 @@
-import React from 'react';
-import { Building2, Check, AlertTriangle, Clock, Bell, Users, FileSignature, BarChart3, ChevronRight } from 'lucide-react';
+import type { CSSProperties } from 'react';
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  BarChart3,
+  Building2,
+  CalendarDays,
+  ChevronRight,
+  FileSignature,
+  House,
+  Tag,
+  Users,
+  Wrench,
+} from 'lucide-react';
 import { COLOR } from '../../styles/colors';
-import { Card, PageHeader, Badge } from '../../components/ui';
-
-// Mock values matching legacy
-const MOCK_INMUEBLES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-const MOCK_CONTRATOS = [
-  { id: 1, diaPago: 3, fechaFin: "2026-07-31" },
-  { id: 2, diaPago: 8, fechaFin: "2026-03-14" },
-  { id: 3, diaPago: 11, fechaFin: "2026-07-15" },
-  { id: 4, diaPago: 1, fechaFin: "2026-10-31" },
-];
-
-function estadoMora(diaPago: number) {
-  // Hoy = día 8
-  const hoy = 8;
-  if (hoy <= 5) return { estado: "ok", label: "Sin recargo", color: COLOR.verde, bg: COLOR.verdeClaro };
-  if (hoy <= 10) return { estado: "recargo", label: `Recargo día ${hoy}`, color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro };
-  return { estado: "mora", label: "En afianzadora", color: COLOR.rojo, bg: COLOR.rojoClaro };
-}
+import { Badge, Card, PageHeader, SectionTitle } from '../../components/ui';
 
 interface DashboardProps {
   onNavigate: (page: string) => void;
 }
 
-export default function Dashboard({ onNavigate }: DashboardProps) {
-  const totalInmuebles = MOCK_INMUEBLES.length;
-  const arrendados = 8; // Simulado
-  const enMora = MOCK_CONTRATOS.filter(c => estadoMora(c.diaPago).estado !== "ok").length;
-  
-  const proximosVencer = MOCK_CONTRATOS.filter(c => {
-    const fin = new Date(c.fechaFin);
-    const hoy = new Date("2026-06-24");
-    const diffTime = fin.getTime() - hoy.getTime();
-    const dias = diffTime / (1000 * 60 * 60 * 24);
-    return dias > 0 && dias <= 60;
-  });
+const kpis = [
+  { label: 'Total inmuebles', value: 10, note: '4 propietarios activos', icon: Building2, color: COLOR.azul, soft: COLOR.azulClaro },
+  { label: 'En arriendo', value: 7, note: '70% de ocupación', icon: House, color: COLOR.verde, soft: COLOR.verdeClaro },
+  { label: 'En venta', value: 1, note: '1 ficha publicada', icon: Tag, color: COLOR.mostazaOscuro, soft: COLOR.mostazaClaro },
+  { label: 'Pendientes por arrendar', value: 2, note: '1 requiere arreglo', icon: AlertTriangle, color: COLOR.rojo, soft: COLOR.rojoClaro },
+];
 
-  const kpis = [
-    { label: "Total inmuebles", valor: totalInmuebles, icon: Building2, color: COLOR.azul },
-    { label: "Arrendados", valor: arrendados, icon: Check, color: COLOR.verde },
-    { label: "En mora / afianzadora", valor: enMora, icon: AlertTriangle, color: COLOR.rojo },
-    { label: "Contratos próx. a vencer", valor: proximosVencer.length, icon: Clock, color: COLOR.mostazaOscuro },
-  ];
+const alerts = [
+  { title: 'Contrato próximo a vencer', description: 'Local · Av. 6N #23-45 vence en 21 días.', time: 'Hoy', icon: CalendarDays, color: COLOR.rojo, soft: COLOR.rojoClaro },
+  { title: 'Pago con recargo activo', description: 'Comercializadora El Faro · contrato #003.', time: 'Hace 2 h', icon: AlertTriangle, color: COLOR.mostazaOscuro, soft: COLOR.mostazaClaro },
+  { title: 'Inmueble listo para revisión', description: 'Apartamento · Limonar 201 finalizó arreglo.', time: 'Ayer', icon: Wrench, color: COLOR.azul, soft: COLOR.azulClaro },
+];
+
+export default function Dashboard({ onNavigate }: DashboardProps) {
+  const date = new Intl.DateTimeFormat('es-CO', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date());
 
   return (
     <div>
-      <PageHeader title="Dashboard" subtitle="Resumen general de la operación · hoy, 24 de junio de 2026" />
+      <PageHeader
+        eyebrow="Visión general"
+        title="Dashboard"
+        subtitle="Consulta el estado de la operación y atiende primero lo que necesita acción."
+      />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 22 }}>
-        {kpis.map((k, i) => (
-          <Card key={i} style={{ position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", top: -2, left: 0, width: "100%", height: 3, background: COLOR.azul }} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <div style={{ fontSize: 12.5, color: COLOR.carbonSuave, fontWeight: 600, marginBottom: 6 }}>{k.label}</div>
-                <div style={{ fontSize: 30, fontWeight: 700, color: COLOR.carbon, fontFamily: "Georgia, serif" }}>{k.valor}</div>
-              </div>
-              <div style={{ background: k.color + "18", padding: 9, borderRadius: 9 }}>
-                <k.icon size={18} color={k.color} />
-              </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+      <Card className="dashboard-welcome">
+        <div className="dashboard-welcome__copy">
+          <span>Resumen operativo</span>
+          <h2>Todo marcha bien. Hay 3 novedades por revisar.</h2>
+          <p>La ocupación se mantiene estable y tienes dos inmuebles disponibles.</p>
+        </div>
+        <div className="dashboard-welcome__date">Actualizado · {date}</div>
+      </Card>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1.3fr 1fr", gap: 16 }}>
-        <Card>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 700, margin: 0, color: COLOR.carbon }}>Alertas activas</h3>
-            <Badge color={COLOR.rojo} bg={COLOR.rojoClaro}>3 nuevas</Badge>
-          </div>
-          {[
-            { tipo: "Mora", texto: "Comercializadora El Faro Ltda. — contrato #3, día 8, recargo activo", color: COLOR.mostazaOscuro },
-            { tipo: "IPC", texto: "Enero: pendiente actualizar IPC del año en curso", color: COLOR.azul },
-            { tipo: "Vencimiento", texto: "Contrato #3 (Local, Av. 6N) vence en 21 días — recordar renovación", color: COLOR.rojo },
-          ].map((a, i) => (
-            <div key={i} style={{
-              display: "flex", gap: 12, padding: "11px 0",
-              borderBottom: i < 2 ? `1px solid ${COLOR.borde}` : "none"
-            }}>
-              <Bell size={15} color={a.color} style={{ marginTop: 2, flexShrink: 0 }} />
-              <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: a.color, marginBottom: 2 }}>{a.tipo}</div>
-                <div style={{ fontSize: 13.5, color: COLOR.carbon }}>{a.texto}</div>
-              </div>
-            </div>
-          ))}
-        </Card>
-
-        <Card>
-          <h3 style={{ fontSize: 15, fontWeight: 700, margin: "0 0 14px", color: COLOR.carbon }}>Accesos rápidos</h3>
-          {[
-            { label: "Crear propietario", icon: Users, target: "propietarios" },
-            { label: "Crear inmueble", icon: Building2, target: "inmuebles" },
-            { label: "Nuevo contrato de alquiler", icon: FileSignature, target: "alquiler" },
-            { label: "Ver reportes", icon: BarChart3, target: "reportes" },
-          ].map((a, i) => (
-            <div key={i} onClick={() => onNavigate(a.target)} style={{
-              display: "flex", alignItems: "center", gap: 10, padding: "10px 8px",
-              borderRadius: 8, cursor: "pointer", marginBottom: 2
-            }}
-              onMouseEnter={(e) => e.currentTarget.style.background = COLOR.mostazaClaro}
-              onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+      <section className="kpi-grid" aria-label="Indicadores principales">
+        {kpis.map((kpi) => {
+          const Icon = kpi.icon;
+          return (
+            <Card
+              key={kpi.label}
+              className="kpi-card"
+              style={{ '--kpi-color': kpi.color, '--kpi-soft': kpi.soft } as CSSProperties}
             >
-              <a.icon size={16} color={COLOR.azul} />
-              <span style={{ fontSize: 13.5, color: COLOR.carbon, flex: 1 }}>{a.label}</span>
-              <ChevronRight size={14} color={COLOR.carbonSuave} />
-            </div>
-          ))}
+              <div className="kpi-card__top">
+                <div>
+                  <div className="kpi-card__label">{kpi.label}</div>
+                  <div className="kpi-card__value">{kpi.value}</div>
+                </div>
+                <div className="kpi-card__icon"><Icon size={20} /></div>
+              </div>
+              <div className="kpi-card__trend">{kpi.note}</div>
+            </Card>
+          );
+        })}
+      </section>
+
+      <section className="dashboard-grid">
+        <Card>
+          <SectionTitle
+            title="Novedades que requieren atención"
+            description="Ordenadas por prioridad y fecha"
+            action={<Badge color={COLOR.rojo} bg={COLOR.rojoClaro}>3 activas</Badge>}
+          />
+          {alerts.map((alert) => {
+            const Icon = alert.icon;
+            return (
+              <div className="alert-item" key={alert.title}>
+                <div className="alert-item__icon" style={{ color: alert.color, background: alert.soft }}><Icon size={17} /></div>
+                <div className="alert-item__copy">
+                  <strong>{alert.title}</strong>
+                  <span>{alert.description}</span>
+                </div>
+                <span className="alert-item__time">{alert.time}</span>
+              </div>
+            );
+          })}
         </Card>
-      </div>
+
+        <Card>
+          <SectionTitle title="Acciones rápidas" description="Atajos para tareas frecuentes" />
+          {[
+            { label: 'Crear propietario', icon: Users, target: 'propietarios' },
+            { label: 'Registrar inmueble', icon: Building2, target: 'inmuebles' },
+            { label: 'Nuevo contrato', icon: FileSignature, target: 'alquiler' },
+            { label: 'Consultar reportes', icon: BarChart3, target: 'reportes' },
+          ].map((action) => {
+            const Icon = action.icon;
+            return (
+              <button type="button" className="quick-action" key={action.label} onClick={() => onNavigate(action.target)}>
+                <span className="quick-action__icon"><Icon size={17} /></span>
+                <span>{action.label}</span>
+                <ChevronRight size={15} />
+              </button>
+            );
+          })}
+          <button type="button" className="ui-button ui-button--ghost ui-button--sm" onClick={() => onNavigate('reportes')} style={{ marginTop: 10 }}>
+            Ver toda la operación <ArrowUpRight size={14} />
+          </button>
+        </Card>
+      </section>
     </div>
   );
 }

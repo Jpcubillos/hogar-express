@@ -36,20 +36,10 @@ api.interceptors.request.use((config) => {
   return Promise.reject(error);
 });
 
-// Response interceptor to handle global errors (401/403)
+// Preserve API errors so each screen can present the right user-facing message.
 api.interceptors.response.use((response) => {
   return response;
 }, (error) => {
-  if (error.response) {
-    const status = error.response.status;
-    if (status === 401) {
-      // Handle unauthorized session expiration
-      console.warn("Session unauthorized. User might need to login.");
-      // Option to redirect to /login if routing is established
-    } else if (status === 403) {
-      console.error("Forbidden. User does not have appropriate permissions.");
-    }
-  }
   return Promise.reject(error);
 });
 

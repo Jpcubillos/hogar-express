@@ -1,97 +1,104 @@
-import React, { useState } from 'react';
-import { Plus, Search, Building2, Upload, FileText, Camera, FileSignature, Wrench, ChevronLeft } from 'lucide-react';
+import { useState } from 'react';
+import {
+  Building2,
+  Camera,
+  ChevronLeft,
+  FileText,
+  MapPin,
+  Plus,
+  Upload,
+} from 'lucide-react';
 import { COLOR } from '../../styles/colors';
-import { Card, PageHeader, Button, SearchBar, Badge, Modal, Field, Input, Select } from '../../components/ui';
+import { Badge, Button, Card, Field, Input, Modal, PageHeader, SearchBar, SectionTitle, Select } from '../../components/ui';
 
-const money = (n: number) => '$' + Math.round(n).toLocaleString('es-CO');
+const money = (value: number) => `$${Math.round(value).toLocaleString('es-CO')}`;
 
 const PROPIETARIOS = [
-  { id: 1, nombre: "María Elena Castaño Ruiz" },
-  { id: 2, nombre: "Jorge Iván Salazar Mosquera" },
-  { id: 3, nombre: "Inversiones Cañasgordas S.A.S" },
-  { id: 4, nombre: "Luz Dary Ocampo Vélez" },
+  { id: 1, nombre: 'María Elena Castaño Ruiz' },
+  { id: 2, nombre: 'Jorge Iván Salazar Mosquera' },
+  { id: 3, nombre: 'Inversiones Cañasgordas S.A.S.' },
+  { id: 4, nombre: 'Luz Dary Ocampo Vélez' },
 ];
 
 const INMUEBLES = [
-  { id: 1, propietarioId: 1, tipo: "Apartamento", direccion: "Calle 5 #38-21, Apto 502", barrio: "Tequendama", estrato: 5, area: 78, canon: 1450000, pctAdmin: 10, preaviso: 2, destino: "ALQUILER", estado: "Arrendado", fianzas: ["AFFI - Canon 2%"] },
-  { id: 2, propietarioId: 1, tipo: "Local", direccion: "Av. 6N #23-45", barrio: "Granada", estrato: 5, area: 45, canon: 2100000, pctAdmin: 10, preaviso: 3, destino: "ALQUILER", estado: "Arrendado", fianzas: ["Fianzas de Colombia - Integral 3%"] },
-  { id: 3, propietarioId: 1, tipo: "Apartamento", direccion: "Cra 100 #14-32, Torre 3 Apto 801", barrio: "Ciudad Jardín", estrato: 6, area: 95, canon: 2300000, pctAdmin: 10, preaviso: 2, destino: "DISPONIBLE", estado: "Disponible", fianzas: [] },
-  { id: 4, propietarioId: 2, tipo: "Casa", direccion: "Calle 13 #45-67", barrio: "El Ingenio", estrato: 4, area: 130, canon: 1850000, pctAdmin: 12, preaviso: 2, destino: "ALQUILER", estado: "Arrendado", fianzas: ["AFFI - Canon 2%", "AFFI - Daños 1%"] },
-  { id: 5, propietarioId: 3, tipo: "Oficina", direccion: "Torre Empresarial Sur, Of. 304", barrio: "San Fernando", estrato: 6, area: 60, canon: 1980000, pctAdmin: 10, preaviso: 3, destino: "ALQUILER", estado: "Arrendado", fianzas: ["Fianzas de Colombia - Servicios 1.5%"] },
-  { id: 6, propietarioId: 3, tipo: "Oficina", direccion: "Torre Empresarial Sur, Of. 305", barrio: "San Fernando", estrato: 6, area: 60, canon: 1980000, pctAdmin: 10, preaviso: 3, destino: "ALQUILER", estado: "Arrendado", fianzas: ["Fianzas de Colombia - Servicios 1.5%"] },
-  { id: 7, propietarioId: 3, tipo: "Bodega", direccion: "Zona Industrial Acopi, Bodega 12", barrio: "Acopi", estrato: 3, area: 320, canon: 4200000, pctAdmin: 10, preaviso: 3, destino: "ALQUILER", estado: "Arrendado", fianzas: ["AFFI - Canon 2%"] },
-  { id: 8, propietarioId: 3, tipo: "Apartamento", direccion: "Cra 70 #5-12, Apto 201", barrio: "Limonar", estrato: 5, area: 88, canon: 1750000, pctAdmin: 10, preaviso: 2, destino: "ALQUILER", estado: "En arreglo", fianzas: ["AFFI - Canon 2%"] },
-  { id: 9, propietarioId: 3, tipo: "Apartamento", direccion: "Cra 70 #5-12, Apto 202", barrio: "Limonar", estrato: 5, area: 88, canon: 1750000, pctAdmin: 10, preaviso: 2, destino: "ALQUILER", estado: "Arrendado", fianzas: ["AFFI - Canon 2%"] },
-  { id: 10, propietarioId: 4, tipo: "Casa", direccion: "Calle 25 #88-14", barrio: "Pance", estrato: 6, area: 210, canon: 3600000, pctAdmin: 10, preaviso: 3, destino: "VENTA", estado: "En venta", fianzas: [] },
+  { id: 1, propietarioId: 1, tipo: 'Apartamento', direccion: 'Calle 5 #38-21, Apto 502', barrio: 'Tequendama', estrato: 5, area: 78, canon: 1450000, pctAdmin: 10, preaviso: 2, estado: 'Arrendado' },
+  { id: 2, propietarioId: 1, tipo: 'Local', direccion: 'Av. 6N #23-45', barrio: 'Granada', estrato: 5, area: 45, canon: 2100000, pctAdmin: 10, preaviso: 3, estado: 'Arrendado' },
+  { id: 3, propietarioId: 1, tipo: 'Apartamento', direccion: 'Cra 100 #14-32, Torre 3 Apto 801', barrio: 'Ciudad Jardín', estrato: 6, area: 95, canon: 2300000, pctAdmin: 10, preaviso: 2, estado: 'Disponible' },
+  { id: 4, propietarioId: 2, tipo: 'Casa', direccion: 'Calle 13 #45-67', barrio: 'El Ingenio', estrato: 4, area: 130, canon: 1850000, pctAdmin: 12, preaviso: 2, estado: 'Arrendado' },
+  { id: 5, propietarioId: 3, tipo: 'Oficina', direccion: 'Torre Empresarial Sur, Of. 304', barrio: 'San Fernando', estrato: 6, area: 60, canon: 1980000, pctAdmin: 10, preaviso: 3, estado: 'Arrendado' },
+  { id: 6, propietarioId: 3, tipo: 'Oficina', direccion: 'Torre Empresarial Sur, Of. 305', barrio: 'San Fernando', estrato: 6, area: 60, canon: 1980000, pctAdmin: 10, preaviso: 3, estado: 'Arrendado' },
+  { id: 7, propietarioId: 3, tipo: 'Bodega', direccion: 'Zona Industrial Acopi, Bodega 12', barrio: 'Acopi', estrato: 3, area: 320, canon: 4200000, pctAdmin: 10, preaviso: 3, estado: 'Arrendado' },
+  { id: 8, propietarioId: 3, tipo: 'Apartamento', direccion: 'Cra 70 #5-12, Apto 201', barrio: 'Limonar', estrato: 5, area: 88, canon: 1750000, pctAdmin: 10, preaviso: 2, estado: 'En arreglo' },
+  { id: 9, propietarioId: 3, tipo: 'Apartamento', direccion: 'Cra 70 #5-12, Apto 202', barrio: 'Limonar', estrato: 5, area: 88, canon: 1750000, pctAdmin: 10, preaviso: 2, estado: 'Arrendado' },
+  { id: 10, propietarioId: 4, tipo: 'Casa', direccion: 'Calle 25 #88-14', barrio: 'Pance', estrato: 6, area: 210, canon: 3600000, pctAdmin: 10, preaviso: 3, estado: 'En venta' },
 ];
 
-export default function Inmuebles() {
-  const [busqueda, setBusqueda] = useState("");
-  const [filtroEstado, setFiltroEstado] = useState("Todos");
-  const [seleccionado, setSeleccionado] = useState<number | null>(null);
-  const [modalNuevo, setModalNuevo] = useState(false);
+const statusStyle: Record<string, { color: string; bg: string }> = {
+  Disponible: { color: COLOR.azul, bg: COLOR.azulClaro },
+  Arrendado: { color: COLOR.verde, bg: COLOR.verdeClaro },
+  'En venta': { color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro },
+  'En arreglo': { color: COLOR.rojo, bg: COLOR.rojoClaro },
+};
 
-  const filtrados = INMUEBLES.filter(i => {
-    const matchBusqueda = i.direccion.toLowerCase().includes(busqueda.toLowerCase()) || i.barrio.toLowerCase().includes(busqueda.toLowerCase());
-    const matchEstado = filtroEstado === "Todos" || i.estado === filtroEstado;
-    return matchBusqueda && matchEstado;
+function StatusBadge({ status }: { status: string }) {
+  const style = statusStyle[status] || statusStyle.Disponible;
+  return <Badge color={style.color} bg={style.bg}>{status}</Badge>;
+}
+
+export default function Inmuebles() {
+  const [search, setSearch] = useState('');
+  const [status, setStatus] = useState('Todos');
+  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+
+  const filtered = INMUEBLES.filter((property) => {
+    const matchesText = `${property.direccion} ${property.barrio} ${property.tipo}`.toLowerCase().includes(search.toLowerCase());
+    return matchesText && (status === 'Todos' || property.estado === status);
   });
 
-  const getEstadoBadge = (estado: string) => {
-    const map: Record<string, { color: string, bg: string }> = {
-      "Disponible": { color: COLOR.azul, bg: COLOR.azulClaro },
-      "Arrendado": { color: COLOR.verde, bg: COLOR.verdeClaro },
-      "En venta": { color: COLOR.mostazaOscuro, bg: COLOR.mostazaClaro },
-      "En arreglo": { color: COLOR.rojo, bg: COLOR.rojoClaro },
-    };
-    const s = map[estado] || map["Disponible"];
-    return <Badge color={s.color} bg={s.bg}>{estado}</Badge>;
-  };
-
-  if (seleccionado !== null) {
-    const inm = INMUEBLES.find(x => x.id === seleccionado)!;
-    const prop = PROPIETARIOS.find(p => p.id === inm.propietarioId)!;
+  if (selectedId !== null) {
+    const property = INMUEBLES.find((item) => item.id === selectedId)!;
+    const owner = PROPIETARIOS.find((item) => item.id === property.propietarioId)!;
     return (
       <div>
-        <div onClick={() => setSeleccionado(null)} style={{ display: "flex", alignItems: "center", gap: 6, color: COLOR.azul, fontSize: 13.5, fontWeight: 600, cursor: "pointer", marginBottom: 16 }}>
-          <ChevronLeft size={15} /> Volver a inmuebles
-        </div>
+        <button type="button" className="back-link" onClick={() => setSelectedId(null)}>
+          <ChevronLeft size={16} /> Volver a inmuebles
+        </button>
         <PageHeader
-          title={inm.tipo + " · " + inm.barrio}
-          subtitle={inm.direccion}
-          action={getEstadoBadge(inm.estado)}
+          eyebrow="Ficha del inmueble"
+          title={`${property.tipo} · ${property.barrio}`}
+          subtitle={property.direccion}
+          action={<StatusBadge status={property.estado} />}
         />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+
+        <div className="two-column-grid">
           <Card>
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 14px", color: COLOR.carbon }}>Ficha del inmueble</h3>
-            {[
-              ["Tipo", inm.tipo], ["Barrio / Ciudad", inm.barrio + ", Cali"], ["Estrato", inm.estrato],
-              ["Área", inm.area.toString() + " m²"], ["Canon mensual", money(inm.canon)], ["% Administración", inm.pctAdmin.toString() + "%"],
-              ["Preaviso de entrega", inm.preaviso.toString() + " meses"], ["Propietario", prop.nombre],
-            ].map(([label, val], i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: i < 7 ? `1px solid ${COLOR.borde}` : "none" }}>
-                <span style={{ fontSize: 13, color: COLOR.carbonSuave }}>{label}</span>
-                <span style={{ fontSize: 13.5, fontWeight: 600, color: COLOR.carbon }}>{val}</span>
-              </div>
-            ))}
+            <SectionTitle title="Información principal" description="Características y condiciones comerciales" />
+            <div className="detail-list">
+              {[
+                ['Tipo de inmueble', property.tipo],
+                ['Ubicación', `${property.barrio}, Cali`],
+                ['Estrato', property.estrato],
+                ['Área privada', `${property.area} m²`],
+                ['Canon mensual', money(property.canon)],
+                ['Administración', `${property.pctAdmin}%`],
+                ['Preaviso de entrega', `${property.preaviso} meses`],
+                ['Propietario', owner.nombre],
+              ].map(([label, value]) => (
+                <div className="detail-row" key={label}><span>{label}</span><strong>{value}</strong></div>
+              ))}
+            </div>
           </Card>
 
           <Card>
-            <h3 style={{ fontSize: 14, fontWeight: 700, margin: "0 0 14px", color: COLOR.carbon }}>Fotos y documentos</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8, marginBottom: 14 }}>
-              {[1, 2, 3].map(n => (
-                <div key={n} style={{ aspectRatio: "1", background: COLOR.fondo, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", border: `1px dashed ${COLOR.borde}` }}>
-                  <Camera size={20} color={COLOR.carbonSuave} />
-                </div>
-              ))}
+            <SectionTitle title="Fotos y documentos" description="Evidencia visual y soporte legal" />
+            <div className="photo-grid">
+              {[1, 2, 3].map((item) => <div className="photo-placeholder" key={item}><Camera size={20} /></div>)}
             </div>
-            <Button variant="ghost" icon={Upload} size="sm" style={{ padding: "4px 0", marginBottom: 14 }}>Cargar fotos</Button>
-            <div style={{ borderTop: `1px solid ${COLOR.borde}`, paddingTop: 12 }}>
-              {["Certificado de tradición.pdf", "Escritura.pdf"].map((d, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 0", fontSize: 13, color: COLOR.azul }}>
-                  <FileText size={14} /> {d}
-                </div>
-              ))}
+            <Button variant="ghost" icon={Upload} size="sm">Cargar fotografías</Button>
+            <div style={{ marginTop: 18, paddingTop: 12, borderTop: `1px solid ${COLOR.borde}` }}>
+              <div className="document-row"><FileText size={15} /> Certificado de tradición.pdf</div>
+              <div className="document-row"><FileText size={15} /> Escritura pública.pdf</div>
             </div>
           </Card>
         </div>
@@ -102,44 +109,92 @@ export default function Inmuebles() {
   return (
     <div>
       <PageHeader
+        eyebrow="Portafolio"
         title="Inmuebles"
-        subtitle={INMUEBLES.length + " inmuebles registrados"}
-        action={<Button icon={Plus} onClick={() => setModalNuevo(true)}>Crear inmueble</Button>}
+        subtitle={`${INMUEBLES.length} inmuebles registrados entre arriendo, venta y disponibilidad.`}
+        action={<Button icon={Plus} onClick={() => setShowCreate(true)}>Crear inmueble</Button>}
       />
-      <div style={{ display: "flex", gap: 10, marginBottom: 16, alignItems: "center" }}>
-        <SearchBar placeholder="Buscar por dirección o barrio..." value={busqueda} onChange={setBusqueda} />
-        <div style={{ display: "flex", gap: 6 }}>
-          {["Todos", "Disponible", "Arrendado", "En venta", "En arreglo"].map(e => (
-            <div key={e} onClick={() => setFiltroEstado(e)} style={{
-              padding: "7px 13px", borderRadius: 7, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
-              background: filtroEstado === e ? COLOR.azul : "white", color: filtroEstado === e ? "white" : COLOR.carbon,
-              border: `1px solid ${filtroEstado === e ? COLOR.azul : COLOR.borde}`
-            }}>{e}</div>
+
+      <div className="toolbar">
+        <SearchBar placeholder="Buscar por dirección, barrio o tipo…" value={search} onChange={setSearch} />
+        <div className="filter-pills">
+          {['Todos', 'Disponible', 'Arrendado', 'En venta', 'En arreglo'].map((item) => (
+            <button
+              type="button"
+              key={item}
+              className={`filter-pill ${status === item ? 'is-active' : ''}`}
+              onClick={() => setStatus(item)}
+            >
+              {item}
+            </button>
           ))}
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-        {filtrados.map(inm => {
-          const prop = PROPIETARIOS.find(p => p.id === inm.propietarioId)!;
-          return (
-            <Card key={inm.id} onClick={() => setSeleccionado(inm.id)}>
-              <div style={{ aspectRatio: "16/9", background: COLOR.fondo, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 12, border: `1px solid ${COLOR.borde}` }}>
-                <Building2 size={28} color={COLOR.borde} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                <div style={{ fontSize: 14, fontWeight: 700, color: COLOR.carbon }}>{inm.tipo} · {inm.barrio}</div>
-                {getEstadoBadge(inm.estado)}
-              </div>
-              <div style={{ fontSize: 12.5, color: COLOR.carbonSuave, marginBottom: 10 }}>{inm.direccion}</div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: `1px solid ${COLOR.borde}`, paddingTop: 10 }}>
-                <span style={{ fontSize: 15, fontWeight: 700, color: COLOR.carbon }}>{money(inm.canon)}</span>
-                <span style={{ fontSize: 12, color: COLOR.carbonSuave }}>{prop.nombre.split(" ").slice(0, 2).join(" ")}</span>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      {filtered.length > 0 ? (
+        <div className="module-grid">
+          {filtered.map((property) => {
+            const owner = PROPIETARIOS.find((item) => item.id === property.propietarioId)!;
+            return (
+              <Card key={property.id} className="property-card" onClick={() => setSelectedId(property.id)}>
+                <div className="property-card__visual">
+                  <Building2 size={35} strokeWidth={1.65} />
+                </div>
+                <div className="property-card__content">
+                  <div className="property-card__heading">
+                    <h3>{property.tipo} · {property.barrio}</h3>
+                    <StatusBadge status={property.estado} />
+                  </div>
+                  <div className="property-card__address"><MapPin size={12} style={{ verticalAlign: -2, marginRight: 4 }} />{property.direccion}</div>
+                  <div className="property-card__footer">
+                    <span className="property-card__price">{money(property.canon)}</span>
+                    <span className="property-card__owner">{owner.nombre.split(' ').slice(0, 2).join(' ')}</span>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="empty-state">
+          <div className="empty-state__icon"><Building2 size={26} /></div>
+          <h3>No hay inmuebles para mostrar</h3>
+          <p>Ajusta los filtros o registra un nuevo inmueble en el portafolio.</p>
+          <Button icon={Plus} onClick={() => setShowCreate(true)}>Crear inmueble</Button>
+        </Card>
+      )}
+
+      {showCreate && (
+        <Modal
+          title="Crear inmueble"
+          subtitle="Registra la ubicación, características y responsable del inmueble."
+          onClose={() => setShowCreate(false)}
+          width={660}
+        >
+          <div className="form-row">
+            <Field label="Tipo de inmueble"><Select><option>Apartamento</option><option>Casa</option><option>Local</option><option>Oficina</option><option>Bodega</option></Select></Field>
+            <Field label="Propietario"><Select>{PROPIETARIOS.map((owner) => <option key={owner.id}>{owner.nombre}</option>)}</Select></Field>
+          </div>
+          <Field label="Dirección completa"><Input placeholder="Calle, carrera, número y complemento" /></Field>
+          <div className="form-row">
+            <Field label="Barrio"><Input placeholder="Barrio" /></Field>
+            <Field label="Ciudad"><Input defaultValue="Cali" /></Field>
+          </div>
+          <div className="form-row">
+            <Field label="Estrato"><Select><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option></Select></Field>
+            <Field label="Área (m²)"><Input type="number" placeholder="0" /></Field>
+            <Field label="Canon mensual"><Input type="number" placeholder="$ 0" /></Field>
+          </div>
+          <div className="form-row">
+            <Field label="Estado inicial"><Select><option>Disponible</option><option>En venta</option><option>En arreglo</option></Select></Field>
+            <Field label="Administración (%)"><Input type="number" defaultValue="10" /></Field>
+          </div>
+          <div className="modal-actions">
+            <Button variant="secondary" onClick={() => setShowCreate(false)}>Cancelar</Button>
+            <Button icon={Building2} onClick={() => setShowCreate(false)}>Guardar inmueble</Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }
