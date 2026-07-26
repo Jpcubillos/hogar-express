@@ -88,9 +88,9 @@ export default function Arreglos() {
       const [resOrders, resSummary, resProps, resCats, resProv] = await Promise.all([
         api.get('/repairs/orders/'),
         api.get('/repairs/orders/dashboard-summary/'),
-        api.get('/properties/properties/'),
+        api.get('/properties/'),
         api.get('/catalogs/repair-categories/'),
-        api.get('/people/provider-profiles/'),
+        api.get('/people/providers/'),
       ]);
 
       const rawOrders = Array.isArray(resOrders.data) ? resOrders.data : (resOrders.data.results || []);
@@ -173,8 +173,8 @@ export default function Arreglos() {
         order_number: `OT-2026-${Math.floor(1000 + Math.random() * 9000)}`,
         title: draft.title || "Reparación General",
         description: draft.description || "Sin descripción especificada",
-        property: draft.property_id || propertiesList[0]?.id,
-        category: draft.category_id || categoriesList[0]?.id,
+        property: draft.property_id || (propertiesList[0] && propertiesList[0].id),
+        category: draft.category_id || (categoriesList[0] && categoriesList[0].id),
         priority: draft.priority,
         severity: draft.severity,
         repair_type: draft.repair_type,
@@ -293,7 +293,7 @@ export default function Arreglos() {
             onChange={setBusqueda}
             className="search-bar-flexible"
           />
-          
+
           <Select
             value={filtroPrioridad}
             onChange={(e) => setFiltroPrioridad(e.target.value)}
@@ -425,9 +425,13 @@ export default function Arreglos() {
             <div>
               <Field label="Inmueble Afectado">
                 <Select value={draft.property_id} onChange={(e) => setDraft({ ...draft, property_id: e.target.value })}>
-                  {propertiesList.map(p => (
-                    <option key={p.id} value={p.id}>{p.address_line} ({p.internal_code})</option>
-                  ))}
+                  {propertiesList.length === 0 ? (
+                    <option value="">Cargando inmuebles...</option>
+                  ) : (
+                    propertiesList.map(p => (
+                      <option key={p.id} value={p.id}>{p.address_line} ({p.unit_number || p.internal_code})</option>
+                    ))
+                  )}
                 </Select>
               </Field>
               <Field label="Título descriptivo del problema">
@@ -496,9 +500,13 @@ export default function Arreglos() {
               <h4 style={{ fontSize: 14, fontWeight: 700, color: COLOR.carbon, marginBottom: 12 }}>Proveedor y Estimación de Costos</h4>
               <Field label="Proveedor o Maestro Asignado">
                 <Select value={draft.provider_id} onChange={(e) => setDraft({ ...draft, provider_id: e.target.value })}>
-                  {providersList.map(p => (
-                    <option key={p.id} value={p.id}>{p.provider_kind} - {p.id}</option>
-                  ))}
+                  {providersList.length === 0 ? (
+                    <option value="">Sin proveedores registrados (Opcional)</option>
+                  ) : (
+                    providersList.map(p => (
+                      <option key={p.id} value={p.id}>{p.provider_kind} - {p.id}</option>
+                    ))
+                  )}
                 </Select>
               </Field>
               <Field label="Costo Estimado Inicial (COP)">
