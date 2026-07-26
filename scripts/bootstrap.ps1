@@ -82,6 +82,10 @@ docker compose exec backend python manage.py seed_catalogs
 Write-Host "Cargando roles y permisos en la base de datos..." -ForegroundColor Gray
 docker compose exec backend python manage.py seed_roles
 
+# 8.5 Seed Demo Data
+Write-Host "Cargando datos de prueba de inmuebles y propietarios..." -ForegroundColor Gray
+docker compose exec backend python manage.py seed_demo
+
 # 9. Create Superuser (Idempotent try)
 Write-Host "Creando superusuario de administración..." -ForegroundColor Gray
 docker compose exec backend python manage.py createsuperuser --noinput 2>$null

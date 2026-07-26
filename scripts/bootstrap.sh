@@ -73,6 +73,10 @@ docker compose exec backend python manage.py seed_catalogs
 echo -e "\e[90mCargando roles y permisos en la base de datos...\e[0m"
 docker compose exec backend python manage.py seed_roles
 
+# 8.5 Seed Demo Data
+echo -e "\e[90mCargando datos de prueba de inmuebles y propietarios...\e[0m"
+docker compose exec backend python manage.py seed_demo
+
 # 9. Create Superuser (Idempotent try)
 echo -e "\e[90mCreando superusuario de administración...\e[0m"
 docker compose exec backend python manage.py createsuperuser --noinput || true
